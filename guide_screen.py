@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QWidget, QLabel, QPushButton, QVBoxLayout, 
-                           QFrame, QSizePolicy, QScrollArea)
+                           QFrame, QSizePolicy)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import (QFont, QPixmap, QPainter, QColor, QFontDatabase, 
                         QLinearGradient, QPalette, QBrush)
@@ -44,38 +44,7 @@ class GuideScreen(QWidget):
         # Ana layout
         main_layout = QVBoxLayout(self)
         main_layout.setSpacing(0)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-
-        # Scroll Area
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QFrame.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll_area.setStyleSheet("""
-            QScrollArea {
-                background-color: transparent;
-                border: none;
-            }
-            QScrollBar:vertical {
-                width: 8px;
-                background: rgba(0, 0, 0, 0.1);
-                border-radius: 4px;
-            }
-            QScrollBar::handle:vertical {
-                background: rgba(255, 255, 255, 0.3);
-                border-radius: 4px;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-        """)
-
-        # İçerik widget'ı
-        content_widget = QWidget()
-        content_widget.setStyleSheet("background-color: transparent;")
-        content_layout = QVBoxLayout(content_widget)
-        content_layout.setSpacing(40)
-        content_layout.setContentsMargins(40, 60, 40, 60)
+        main_layout.setContentsMargins(40, 40, 40, 40)
 
         # İçerik container'ı
         content_frame = QFrame()
@@ -85,19 +54,34 @@ class GuideScreen(QWidget):
                 background-color: rgba(0, 0, 0, 25%);
                 border-radius: 20px;
                 padding: 20px;
-                min-height: 400px;
             }
         """)
         frame_layout = QVBoxLayout(content_frame)
         frame_layout.setSpacing(30)
-        frame_layout.setContentsMargins(30, 40, 30, 40)
+        frame_layout.setContentsMargins(40, 40, 40, 40)
+
+        # Logo container
+        logo_container = QWidget()
+        logo_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        logo_container.setStyleSheet("background-color: transparent;")
+        logo_layout = QVBoxLayout(logo_container)
+        logo_layout.setContentsMargins(0, 0, 0, 30)  # Increased bottom margin
+
+        # Logo
+        self.logo_label = QLabel()
+        self.logo_pixmap = QPixmap("assets/logo.png")
+        self.update_logo_size()  # Initial logo size update
+        self.logo_label.setAlignment(Qt.AlignCenter)
+        logo_layout.addWidget(self.logo_label)
+
+        frame_layout.addWidget(logo_container)
 
         # Başlık
         title_label = QLabel("Sürüş sırasında güvenliğinizi\nön planda tutuyoruz.")
         title_label.setAlignment(Qt.AlignCenter)
         title_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         title_label.setStyleSheet("""
-            font-size: 32px;
+            font-size: 40px;
             font-weight: bold;
             color: white;
             margin-bottom: 20px;
@@ -105,13 +89,14 @@ class GuideScreen(QWidget):
             letter-spacing: 1px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
             padding: 10px;
+            line-height: 1.4;
         """)
         title_label.setWordWrap(True)
         frame_layout.addWidget(title_label)
 
         # Açıklama
         description_text = (
-            "Bu uygulama, kameranızdan aldığı görüntülerle yorgunluk belirtilerini algılar, "
+            "Bu uygulama kameranızdan aldığı görüntülerle yorgunluk belirtilerini algılar, "
             "uyarılar vererek sizi ve sevdiklerinizi olası kazalardan korur.\n\n"
             "Trafik güvenliği için bir adım daha atın.\n\n"
             "Yolculuğunuz boyunca gözünüz açık, zihniniz dinç kalsın!"
@@ -121,7 +106,7 @@ class GuideScreen(QWidget):
         description_label.setAlignment(Qt.AlignCenter)
         description_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         description_label.setStyleSheet("""
-            font-size: 18px;
+            font-size: 25px;
             color: rgba(255, 255, 255, 0.95);
             line-height: 1.8;
             margin: 20px 0;
@@ -136,14 +121,14 @@ class GuideScreen(QWidget):
         # Devam butonu
         button = QPushButton("Devam Et")
         button.setCursor(Qt.PointingHandCursor)
-        button.setFixedWidth(200)  # Sabit genişlik
+        button.setFixedWidth(250)
         button.setStyleSheet("""
             QPushButton {
                 background-color: #007BFF;
                 color: white;
                 border-radius: 25px;
                 padding: 15px 40px;
-                font-size: 18px;
+                font-size: 20px;
                 font-weight: bold;
                 margin-top: 20px;
                 border: 2px solid transparent;
@@ -163,19 +148,35 @@ class GuideScreen(QWidget):
         frame_layout.addWidget(button, alignment=Qt.AlignCenter)
 
         # Layout'ları birleştir
-        content_layout.addWidget(content_frame)
-        scroll_area.setWidget(content_widget)
-        main_layout.addWidget(scroll_area)
+        main_layout.addWidget(content_frame)
 
     def resizeEvent(self, event):
-        """Pencere boyutu değiştiğinde arka plan resmini yeniden boyutlandır"""
+        """Pencere boyutu değiştiğinde arka plan resmini ve logoyu yeniden boyutlandır"""
         super().resizeEvent(event)
-        self.background = QPixmap("assets/foto2.png")
         
-        # Resmi daha iyi kalitede ölçeklendir
+        # Arka plan resmini güncelle
+        self.background = QPixmap("assets/foto2.png")
         scaled_size = self.size() * self.devicePixelRatio()
         self.background = self.background.scaled(
             scaled_size,
             Qt.KeepAspectRatioByExpanding,
             Qt.SmoothTransformation
         )
+        
+        # Logoyu güncelle
+        self.update_logo_size()
+
+    def update_logo_size(self):
+        """Logoyu pencere boyutuna göre ölçeklendir"""
+        if hasattr(self, 'logo_label') and hasattr(self, 'logo_pixmap'):
+            # Pencere genişliğinin %20'si kadar logo boyutu
+            target_size = min(self.width() * 0.2, 200)  # Maximum 200px
+            target_size = max(target_size, 120)  # Minimum 120px
+            
+            scaled_logo = self.logo_pixmap.scaled(
+                int(target_size),
+                int(target_size),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation
+            )
+            self.logo_label.setPixmap(scaled_logo)

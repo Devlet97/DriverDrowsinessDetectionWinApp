@@ -75,7 +75,7 @@ class ChooseScreen(QWidget):
 
         # Açıklama metni
         description_label = QLabel(
-            "Bu uygulama, sürüş sırasında sürücünün yorgunluk ve dikkat "
+            "Sürüş sırasında sürücünün yorgunluk ve dikkat "
             "durumunu yapay zeka ile analiz eder. Göz kırpma sıklığı, "
             "baş pozisyonu ve yüz ifadesi gibi faktörleri takip ederek "
             "olası tehlikeleri önceden tespit eder ve sizi uyarır."
